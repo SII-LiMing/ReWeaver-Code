@@ -1,0 +1,32 @@
+指南：
+
+1. 关于维度：
+首先需要提取在init中定义好，line 54-56是图像尺寸、patch尺寸、每个token维度的1/2；
+每个图像的token数量为图像尺寸除以patch尺寸的平方+5。如默认的518图像除以14patch=37，即一个图像会有37*37=1369+5=1374个tokens；
+默认每个token的维度为1024+1024（分别来自于自注意力与全局注意力的结果）
+
+2. 关于输入输出与使用：
+主文件就是aggragator.py
+首先把预训练的dino路径换一下，往下滑，有个路径，也可以直接搜一下“.pth”,它会跳出来的
+
+输入为[B,S,C,H,W]的图像，代表[batch, multiview的数量, 3通道(RGB), 高, 宽]
+输出为一个list，token[0]到token[23]代表第1-24次交替自注意力与全局注意力之后的结果，VGGT后面是利用了序号为4, 11, 17, 23的结果，可以自行选择想用的。
+list中每一个结果的维度为[B,S,N,D]，代表[batch, multiview的数量, 每个图像token的个数, token的维度]，默认后面两个为1374,2048（与1对应）
+model = Aggregator()
+tokens, _ = model(images)
+B, S, N, D = tokens[23].shape
+for i in range(depth):
+	tokens[i]=tokens[i].view(B, S * N, D)
+# 同VGGT，假设我只需要第4,11,17,23次交替注意力之后的结果的token，可以这样拼接
+out = tf.concat([tokens[4], tokens[11], tokens[23], tokens[23]], axis=1) # 输出的维度为[B, 4 * S * N, D]
+
+# 如果只想使用最后一次的注意力之后的结果，那么直接使用tokens[23]就可以，维度为[B, S * N, D]
+
+
+3. 关于可以修改的建议（我不直接在代码上修改，以下建议可供参考）
+（1）self.depth可以从24改到12，亲测效果不会差太多，即减少一半次数的注意力。
+（2）如果只是想从图像提特征，attention不做都没事，self.depth=0即可
+（3）关于用多少次注意力之后的token其实没啥说法，如果对显存要求不高，就直接按VGGT来吧
+（4）self.patch_size还是尽量不要改太大了，embed_dim也就是1/2的token维度可以从1024往低调
+（5）关于是否拼接每个视角的所有tokens还是只选第一个视图的，大概率2-4个分的比较开的视角足够了、
+（6）默认是使用预训练的dinov2来做特征提取，梯度是传播的，如果不想传播可以写一句“model.patch_embed.requires_grad_(False)”,不传我试过，问题也不大

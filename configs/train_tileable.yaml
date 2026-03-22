@@ -1,0 +1,66 @@
+wandb:
+  use_wandb: False
+  project_name: GarmentReconstruction
+  log_dir: experiments
+
+tensorboard:
+  use_tb: True
+  project_name: GarmentReconstruction
+  log_dir: tb_experiments
+
+train_data:
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/train
+  batch_size: 8
+  data_type: train
+  texture_type: tileable
+  samples: ""
+
+eval_data:
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/val
+  batch_size: 8
+  data_type: eval
+  texture_type: tileable
+  samples: ""
+
+test_data:
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/test
+  batch_size: 8
+  data_type: test
+  texture_type: tileable
+  samples: ""
+
+complex_stitch_config:
+  d_model: 768
+  topo_embed_dim: 768
+  curve_avg_count: 36
+  patch_avg_count: 9
+
+flatten_config:
+  scale_loss_coef: 1e-3
+  edge_classify_loss_coef: 1
+  edge_geometry_loss_coef: 300
+
+
+statistics:
+  img_mean: [0.9329, 0.9249, 0.92]
+  img_std: [0.1885, 0.2093, 0.2226]
+save_dir: /inspire/hdd/global_user/liming-253108120187/GarmentRecon/Model_final/saved
+exp_name: final
+
+
+epochs: 60
+warmup: 3
+
+lr_img_encoder: 5e-5
+lr_complex: 1e-5
+lr_flatten: 5e-5      
+weight_decay: 1e-4
+device: cuda
+seed: 42
+eval: False
+complex_model_path: ""
+flatten_model_path: ""
+img_encoder_model_path: ""
+resume_path: ""
+save_weight_freq: 1
+save_pred_freq: 10
