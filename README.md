@@ -8,6 +8,8 @@
 
 ## 🌟 Overview
 
+![ReWeaver Teaser](asset/Teaser.png)
+
 **ReWeaver** reconstructs structured 3D garments and 2D sewing patterns from sparse multi-view RGB images. The method jointly predicts 3D curves, 3D patches, patch-curve connectivity, and flattened 2D panel edges, producing garment assets that are better aligned with downstream simulation and editing pipelines.
 
 This repository contains:
