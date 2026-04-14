@@ -27,8 +27,7 @@ This repository contains:
 - [x] 🚀 Training / evaluation code
 - [x] 📂 Config files
 - [x] 📄 Project page
-- [x] 🤗 GCD-TS dataset link
-- [ ] 📦 Clean environment file
+- [ ] 🤗 GCD-TS dataset
 - [ ] 🏋️ Pretrained model weights
 
 ---
@@ -179,9 +178,8 @@ ReWeaver-Code/
 
 This repository builds on open-source tools and prior work from the community. Many thanks to the authors for sharing their code and resources.
 
-- 🔗 [DINOv2](https://github.com/facebookresearch/dinov2)
-- 🔗 [PyTorch3D](https://github.com/facebookresearch/pytorch3d)
-- 🔗 [VGGT-related encoder design in this repo](vggtencoder/)
+- 🔗 [vggtencoder/](https://arxiv.org/abs/2503.11651)
+- 🔗 [ComplexGen](https://arxiv.org/abs/2205.14573)
 
 ---
 
