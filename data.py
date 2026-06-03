@@ -217,8 +217,9 @@ class TestDataSet_4D_Dress(Dataset):
                 # arr = np.array(img,dtype=np.float32)  # H x W x C
                 img_arr = np.array(img)  # H x W x C
                 
-                if len(mask_path_lst)==len(img_path_lst):
-                    img_arr[masks[i]==0]=255
+                if (sample_dir/"mask").exists():
+                    if len(mask_path_lst)==len(img_path_lst):
+                        img_arr[masks[i]==0]=255
                 img_to_save=Image.fromarray(img_arr)
                 img_to_save.save(f"test_{i}.png")
                 
