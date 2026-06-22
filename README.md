@@ -52,7 +52,7 @@ pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 ```
 
 2. **📥 Pretrained initialization weights.**  
-   The image encoder config expects a DINOv2 initialization checkpoint via `img_enc.dino_path` in the YAML config. Before running experiments, update this path to a valid local checkpoint on your machine.
+  Download the pre-trained weights from Hugging Face: [ReWeaver](https://huggingface.co/SII-LiMing/ReWeaver/tree/main) and place them in the checkpoint directory.
 
 3. **⚙️ Config files.**  
    Main configs are stored in [`configs/`](configs/). Before training or testing, you should update:
