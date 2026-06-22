@@ -698,8 +698,7 @@ def test(rank,world_size,args:Args):
         dist.destroy_process_group()
 
 if __name__ == "__main__":
-    config_path="configs/test_ori_4d_dress.yaml"
-    # config_path="configs/test_ori_gcd.yaml"
+    config_path="configs/train_gcd.yaml"
     
     args=parse_args(config_path)
 

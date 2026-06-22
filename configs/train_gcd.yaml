@@ -9,26 +9,25 @@ tensorboard:
   log_dir: tb_experiments
 
 train_data:
-  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/train
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/train
   batch_size: 8
   data_type: train
   texture_type: ori
   samples: ""
 
 eval_data:
-  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/val
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/val
   batch_size: 8
   data_type: eval
   texture_type: ori
   samples: ""
 
 test_data:
-  root: /inspire/hdd/global_user/liming-253108120187/GarmentRecon/Model_final/test_data
-  batch_size: 2
-  data_type: test_4d_dress
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/test
+  batch_size: 8
+  data_type: test
   texture_type: ori
   samples: ""
-  
 
 complex_stitch_config:
   d_model: 768
@@ -45,8 +44,8 @@ flatten_config:
 statistics:
   img_mean: [0.9329, 0.9249, 0.92]
   img_std: [0.1885, 0.2093, 0.2226]
-save_dir: /inspire/hdd/global_user/liming-253108120187/GarmentRecon/Model_final/saved
-exp_name: final_ori_test_at_4d_dress
+save_dir: /inspire/hdd/global_user/liming-253108120187/GarmentRecon/ReWeaver/saved
+exp_name: final_gcd_test
 
 
 epochs: 60
@@ -59,9 +58,9 @@ weight_decay: 1e-4
 device: cuda
 seed: 42
 eval: False
-complex_model_path: "/inspire/hdd/global_user/liming-253108120187/GarmentRecon/reweaver_weights_tileable_texture/complex_stitch/53.pth"
-flatten_model_path: "/inspire/hdd/global_user/liming-253108120187/GarmentRecon/reweaver_weights_tileable_texture/flatten/53.pth"
-img_encoder_model_path: "/inspire/hdd/global_user/liming-253108120187/GarmentRecon/reweaver_weights_tileable_texture/img_encoder/53.pth"
+complex_model_path: ""
+flatten_model_path: ""
+img_encoder_model_path: ""
 resume_path: ""
 save_weight_freq: 1
 save_pred_freq: 10

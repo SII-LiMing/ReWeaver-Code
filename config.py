@@ -83,7 +83,7 @@ class ImageEncoderConfig:
     rope_freq: int = 100
     init_values: float = 0.01
     
-    dino_path: str = "/inspire/hdd/global_user/liming-253108120187/GarmentRecon/Model_final/vggtencoder/weights/dinov2_vits14_reg4_pretrain.pth"
+    dino_path: str = "/inspire/hdd/global_user/liming-253108120187/GarmentRecon/ReWeaver/vggtencoder/weights/dinov2_vits14_reg4_pretrain.pth"
 
 @dataclasses.dataclass
 class Args:

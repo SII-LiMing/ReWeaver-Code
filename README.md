@@ -20,15 +20,7 @@ This repository contains:
 - training and evaluation code,
 - data loaders for GCD-style garment data.
 
----
 
-## 🎯 TODO List
-
-- [x] 🚀 Training / evaluation code
-- [x] 📂 Config files
-- [x] 📄 Project page
-- [ ] 🤗 GCD-TS dataset
-- [ ] 🏋️ Pretrained model weights
 
 ---
 
@@ -47,13 +39,16 @@ conda create -n reweaver python=3.12.9
 conda activate reweaver
 
 pip install ipdb tqdm tyro omegaconf trimesh wandb scipy tensorboard matplotlib pillow scikit-image
-pip install torch torchvision torchaudio
+
+# for cuda 12.4, you can install torch according your cuda version.
+pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+
 pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 ```
 
 2. **📥 Pretrained initialization weights.**  
-  Download the pre-trained weights from Hugging Face: [ReWeaver](https://huggingface.co/SII-LiMing/ReWeaver/tree/main) and place them in the checkpoint directory.
-
+  Download the pre-trained weights from Hugging Face: [ReWeaver](https://huggingface.co/SII-LiMing/ReWeaver/tree/main) and place them in the checkpoint directory. We have open-sourced two versions of the pretrained model weights: one trained on data rendered with tileable textures, and the other trained on data rendered with the original GCD textures.
+  
 3. **⚙️ Config files.**  
    Main configs are stored in [`configs/`](configs/). Before training or testing, you should update:
 
