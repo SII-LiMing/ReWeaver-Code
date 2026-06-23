@@ -12,16 +12,6 @@
 
 **ReWeaver** reconstructs structured 3D garments and 2D sewing patterns from sparse multi-view RGB images. The method jointly predicts 3D curves, 3D patches, patch-curve connectivity, and flattened 2D panel edges, producing garment assets that are better aligned with downstream simulation and editing pipelines.
 
-This repository contains:
-
-- the VGGT-style multi-view image encoder,
-- the 3D geometry and topology prediction modules,
-- the 2D flattening module,
-- training and evaluation code,
-- data loaders for GCD-style garment data.
-
-
-
 ---
 
 ## Get Started with ReWeaver
@@ -46,8 +36,20 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https
 pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 ```
 
-2. **📥 Pretrained initialization weights.**  
-  Download the pre-trained weights from Hugging Face: [ReWeaver](https://huggingface.co/SII-LiMing/ReWeaver/tree/main) and place them in the checkpoint directory. We have open-sourced two versions of the pretrained model weights: one trained on data rendered with tileable textures, and the other trained on data rendered with the original GCD textures.
+2. **📥 Pretrained weights.**  
+  Download the pre-trained weights from Hugging Face: [ReWeaver](https://huggingface.co/SII-LiMing/ReWeaver/tree/main). We provide two versions:
+
+- `tileable/`: trained on data rendered with tileable textures
+- `GCD_ori/`: trained on data rendered with the original GCD textures
+
+Each version contains:
+
+```text
+complex_stitch.pth
+flatten.pth
+img_encoder.pth
+```
+
   
 3. **⚙️ Config files.**  
    Main configs are stored in [`configs/`](configs/). Before training or testing, you should update:
@@ -87,30 +89,21 @@ Pass the YAML config from the command line, for example:
 Then launch distributed training:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 main.py --config configs/train_tileable.yaml
+CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 main.py --config configs/train_tileable.yaml
 ```
 
 ---
 
 ### 🧪 Evaluation
-
-For evaluation, set in the chosen YAML:
-
-- `eval: True`
-- `test_data.root`
-- `complex_model_path`
-- `flatten_model_path`
-- `img_encoder_model_path`
-
 Recommended test configs in this repo:
 
 - [`configs/eval_gcd.yaml`](configs/eval_gcd.yaml)
 - [`configs/eval_tileable.yaml`](configs/eval_tileable.yaml)
 
-Then run:
+For example:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 main.py --config configs/eval_tileable.yaml
+CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 main.py --config configs/eval_tileable.yaml
 ```
 
 Predictions are saved as compressed `.npz` files under:
@@ -118,6 +111,7 @@ Predictions are saved as compressed `.npz` files under:
 ```text
 <save_dir>/<exp_name>/pred/test/<sample_name>/<sample_name>.npz
 ```
+
 
 ---
 
