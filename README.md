@@ -54,7 +54,6 @@ pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
 - `train_data.root`, `eval_data.root`, `test_data.root`
 - `save_dir`, `exp_name`
-- `img_enc.dino_path`
 - `complex_model_path`, `flatten_model_path`, `img_encoder_model_path` for evaluation
 
 ---
@@ -80,25 +79,16 @@ The loader scans each direct child folder under `train_data.root`, `eval_data.ro
 ### 🚀 Training
 
 The current training / evaluation entrypoint is [`main.py`](main.py).  
-One important caveat is that the config path is currently hardcoded at the bottom of the file. In practice, you should change it to the YAML you want to run, for example:
-
-```python
-if __name__ == "__main__":
-    config_path="configs/train_tileable.yaml"
-```
-
-Before launching a run, edit `config_path` to the YAML you want to use, for example:
+Pass the YAML config from the command line, for example:
 
 - [`configs/train_tileable.yaml`](configs/train_tileable.yaml)
-- [`configs/train_ori.yaml`](configs/train_ori.yaml)
+- [`configs/train_gcd.yaml`](configs/train_gcd.yaml)
 
 Then launch distributed training:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 main.py
+CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 main.py --config configs/train_tileable.yaml
 ```
-
-The repo also includes a minimal launch example in [`bash_scripts/run.sh`](bash_scripts/run.sh).
 
 ---
 
@@ -114,12 +104,13 @@ For evaluation, set in the chosen YAML:
 
 Recommended test configs in this repo:
 
-- [`configs/test_ori_gcd.yaml`](configs/test_ori_gcd.yaml)
+- [`configs/eval_gcd.yaml`](configs/eval_gcd.yaml)
+- [`configs/eval_tileable.yaml`](configs/eval_tileable.yaml)
 
 Then run:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 main.py
+CUDA_VISIBLE_DEVICES=0 torchrun --nproc_per_node=1 main.py --config configs/eval_tileable.yaml
 ```
 
 Predictions are saved as compressed `.npz` files under:
@@ -127,45 +118,6 @@ Predictions are saved as compressed `.npz` files under:
 ```text
 <save_dir>/<exp_name>/pred/test/<sample_name>/<sample_name>.npz
 ```
-
----
-
-## 🗂️ Repository Structure
-
-```text
-ReWeaver-Code/
-├── main.py
-├── config.py
-├── data.py
-├── configs/
-├── models/
-├── utils/
-├── vggtencoder/
-└── bash_scripts/
-```
-
----
-
-## 📝 Notes
-
-- `main.py` does not currently accept `--config`; you need to edit the hardcoded `config_path`.
-- Existing YAML files still contain author-local absolute paths and should be changed before running on a new machine.
-- The training script creates:
-
-```text
-<save_dir>/<exp_name>/
-├── backup/
-├── pred/
-└── weights/
-    ├── complex_stitch/
-    ├── flatten/
-    └── img_encoder/
-```
-
-- Logging backends supported by the code are:
-  - Weights & Biases
-  - TensorBoard
-  - plain text logger
 
 ---
 

@@ -9,22 +9,22 @@ tensorboard:
   log_dir: tb_experiments
 
 train_data:
-  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/train
-  batch_size: 8
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/train
+  batch_size: 2
   data_type: train
   texture_type: tileable
   samples: ""
 
 eval_data:
-  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/val
-  batch_size: 8
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/val
+  batch_size: 2
   data_type: eval
   texture_type: tileable
   samples: ""
 
 test_data:
-  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_PREPARED/test
-  batch_size: 8
+  root: /inspire/hdd/global_user/liming-253108120187/Datasets/GCD_TS/GCD_TS/test
+  batch_size: 2
   data_type: test
   texture_type: tileable
   samples: ""
@@ -45,7 +45,7 @@ statistics:
   img_mean: [0.9329, 0.9249, 0.92]
   img_std: [0.1885, 0.2093, 0.2226]
 save_dir: /inspire/hdd/global_user/liming-253108120187/GarmentRecon/Model_final/saved
-exp_name: final
+exp_name: tileable
 
 
 epochs: 60

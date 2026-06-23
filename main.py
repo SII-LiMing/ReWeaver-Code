@@ -1,10 +1,11 @@
 import os
 import shutil
 import glob
+import argparse
+import sys
 import numpy as np
 from tqdm import tqdm
 from pathlib import Path
-import time
 
 import torch
 import torch.nn as nn
@@ -28,16 +29,20 @@ from vggtencoder.aggregator import Aggregator
 
 from utils.utils import setup_seed
 from config import parse_args,Args
-from data import GCD_DataSet,TestDataSet_GCD,TestDataSet_4D_Dress
+from data import GCD_DataSet,TestDataSet_GCD
 from loss_manager import LossManager
 from logger import WandbLogger,IOStreamLogger,TensorBoardLogger
 
-
-
-import math
 from torch import optim
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
+
+def parse_config_path() -> str:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--config", required=True)
+    cli_args, remaining_args = parser.parse_known_args()
+    sys.argv = [sys.argv[0], *remaining_args]
+    return cli_args.config
 
 
 def pause_one_rank(device_sync=True, tag=""):
@@ -252,23 +257,6 @@ def train(rank,world_size,args:Args):
     flatten_model=FlattenModel(flatten_args).to(device)
     img_encoder_model=Aggregator(img_enc_args).to(device)
     
-    # if isinstance(args.complex_model_path,str) and len(args.complex_model_path)>0:
-    #     assert os.path.exists(args.complex_model_path)
-    #     state_dict = torch.load(args.complex_model_path)
-    #     complex_stitch_model.load_state_dict(state_dict)
-    
-    # if isinstance(args.flatten_model_path,str) and len(args.flatten_model_path)>0:
-    #     assert os.path.exists(args.flatten_model_path)
-    #     state_dict = torch.load(args.flatten_model_path)
-    #     flatten_model.load_state_dict(state_dict)
-    
-    # if isinstance(args.img_encoder_model_path,str) and len(args.img_encoder_model_path)>0:
-    #     assert os.path.exists(args.img_encoder_model_path)
-    #     state_dict = torch.load(args.img_encoder_model_path)
-    #     img_encoder_model.load_state_dict(state_dict)
-        
-     
-    
         
     train_dataset=GCD_DataSet(args.train_data,args.statistics,device=device)
     train_sampler = DistributedSampler(train_dataset, num_replicas=world_size, rank=rank)
@@ -383,7 +371,6 @@ def train(rank,world_size,args:Args):
         train_sampler.set_epoch(epoch)
 
         for data in tqdm(train_loader, disable=(rank != 0)):
-            # st=time.time()
             name=[]
             imgs=[]
             patch_points=[]
@@ -405,27 +392,19 @@ def train(rank,world_size,args:Args):
 
             imgs=torch.stack(imgs,dim=0)
             
-            # print(f"   data load:{time.time()-st}")
             opt_img.zero_grad()
             opt_cpx.zero_grad()
             opt_flt.zero_grad()
             
-            # st=time.time()
-            # time consuming...
             img_tokens,_=img_encoder_model(imgs)
             B,S,N,D=img_tokens.shape
             img_tokens=img_tokens.reshape(B,S*N,D)
-            # print(f"  image encoder {time.time()-st}")
             
-            # st=time.time()
             curve_predictions,patch_predictions, curve_features, patch_features= complex_stitch_model(img_tokens)
-            # print(f"  3d pred: {time.time()-st}")
             
-            # st=time.time()
             curve_loss_dict, curve_matching_indices = curve_loss_criterion(curve_predictions, curves)
             patch_loss_dict, patch_matching_indices = patch_loss_criterion(patch_predictions, patch_points)
             train_loss_manager.update(curve_loss_dict|patch_loss_dict)
-            # print(f"  matching: {time.time()-st}")
 
             patch_curve_matching_loss_topo,patch_curve_topo_acc =\
                 Patch_Curve_Matching(curve_predictions,patch_predictions,curves,patch_points,PC_mat,
@@ -433,13 +412,11 @@ def train(rank,world_size,args:Args):
 
             train_loss_manager.update({"patch_curve_matching_loss_topo": patch_curve_matching_loss_topo,})
 
-            # st=time.time()
             flatten_pred=flatten_model(curve_features, patch_features,\
                 curve_matching_indices, patch_matching_indices,PC_mat)
             
             panel_loss_dict=flatten_losss_criterion(flatten_pred,edge_points,panel_scale)
             train_loss_manager.update(panel_loss_dict)
-            # print(f"  flatten: {time.time()-st}")
             
             train_loss_manager.step()
             opt_img.step()
@@ -485,8 +462,6 @@ def train(rank,world_size,args:Args):
             torch.save(ckpt, str(args.save_dir / "weights" / f"ckpt_e{epoch}.pt"))
             torch.save(ckpt, str(args.save_dir / "weights" / "last.pt"))  # 覆盖式保存最新
 
-
-        
         
         # ####################
         # # Eval
@@ -625,10 +600,7 @@ def test(rank,world_size,args:Args):
         # find_unused_parameters=True
     )
     
-    if args.test_data.data_type=="test_gcd":
-        test_dataset=TestDataSet_GCD(args.test_data,args.statistics,device=device)
-    elif args.test_data.data_type=="test_4d_dress":
-        test_dataset=TestDataSet_4D_Dress(args.test_data,args.statistics,device=device)
+    test_dataset=TestDataSet_GCD(args.test_data,args.statistics,device=device)
         
     test_sampler = DistributedSampler(test_dataset, num_replicas=world_size, rank=rank,shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=args.test_data.batch_size,shuffle=False,
@@ -698,7 +670,7 @@ def test(rank,world_size,args:Args):
         dist.destroy_process_group()
 
 if __name__ == "__main__":
-    config_path="configs/train_gcd.yaml"
+    config_path = parse_config_path()
     
     args=parse_args(config_path)
 

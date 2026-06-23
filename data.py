@@ -5,13 +5,10 @@ import numpy as np
 from torch.utils.data import Dataset
 from pathlib import Path
 from utils import rotation as rotation_tools
-from utils.utils import get_pattern_json_with_3d_vertices,pc_normalize
-from config import parse_args,DatasetConfig,Statistics
+from config import DatasetConfig,Statistics
 from collections import Counter
 from PIL import Image
 import torch
-from skimage.transform import resize
-from utils.img_utils import center_human
 
 def get_final_trans(mean_pc, scale_pc, trans_2_to_3, rot_2_to_3, mean_2d, scale_2d):
 
@@ -157,101 +154,6 @@ class TestDataSet_GCD(Dataset):
         
 
 
-
-class TestDataSet_4D_Dress(Dataset):
-        def __init__(self, args: DatasetConfig, statistics: Statistics,device="cpu"):
-            self.root = Path(args.root)
-            self.type = args.data_type
-            self.texture_type = args.texture_type
-            self.device = device
-            self.samples = []
-            self.img_mean = np.array(statistics.img_mean).reshape(1,3,1,1)
-            self.img_std = np.array(statistics.img_std).reshape(1,3,1,1)
-            sample_file = Path(args.samples)
-            self.edge_type_to_idx={
-                "line": 0,
-                "circle": 1,
-                "quadratic": 2,
-                "cubic": 3,
-                "none": 4
-            }
-            
-            if sample_file.exists() and sample_file.is_file():
-                # 如果提供了sample_file，优先从文件读取
-                with open(sample_file, "r") as f:
-                    lines = f.readlines()
-                samples = [line.strip() for line in lines if line.strip()]
-                samples = [self.root / Path(sample) for sample in samples]
-                self.samples = samples
-            else:
-                # 否则从 root 扫描
-                self.samples = list(self.root.iterdir())
-            # if self.type=="test":
-                # self.samples=[it for it in self.samples if it.name.startswith("rand_00") or it.name.startswith("rand_10") or it.name.startswith("rand_AA") or it.name.startswith("rand_ZZ")]
-                # self.samples=[it for it in self.samples if it.name.startswith("rand_NF6XNTMEX5")]
-                # self.samples=[it for it in self.samples if it.name.startswith("rand_0BRE5SKBPT")]
-            # self.samples=self.samples[:1000]
-            
-        def __len__(self):
-            return len(self.samples)
-
-        def __getitem__(self, idx):
-            sample_dir = self.samples[idx]
-            name=sample_dir.name
-            
-            imgs=[]
-            masks=[]
-            img_path_lst=list((sample_dir/"view").iterdir())
-            img_path_lst=sorted(img_path_lst)
-            if (sample_dir/"mask").exists():
-                mask_path_lst=list((sample_dir/"mask").iterdir())
-                mask_path_lst=sorted(mask_path_lst)
-                for msk_path in mask_path_lst:
-                    mask = Image.open(msk_path)
-                    mask_arr = np.array(mask,dtype=np.float32)  # H x W x C
-                    masks.append(mask_arr)
-
-            
-            for i,img_path in enumerate(img_path_lst):
-                img = Image.open(img_path).convert("RGB")
-                # arr = np.array(img,dtype=np.float32)  # H x W x C
-                img_arr = np.array(img)  # H x W x C
-                
-                if (sample_dir/"mask").exists():
-                    if len(mask_path_lst)==len(img_path_lst):
-                        img_arr[masks[i]==0]=255
-                img_to_save=Image.fromarray(img_arr)
-                img_to_save.save(f"test_{i}.png")
-                
-                img_arr = np.array(img_arr,dtype=np.float32)
-                img_arr = np.transpose(img_arr, (2, 0, 1))  # C x H x W
-                img_arr = (img_arr/255.).clip(0., 1.)
-                
-                c, h, w = img_arr.shape
-                start_h = (h - w) // 2
-                img_arr = img_arr[:, start_h:start_h+w, :]
-                img_arr = resize(img_arr, (3, 518, 518), anti_aliasing=True).astype(np.float32)
-                
-                img_arr = center_human(img_arr)
-                vis_arr = (img_arr.clip(0, 1) * 255).astype(np.uint8)
-
-                vis_arr = np.transpose(vis_arr, (1, 2, 0))
-
-                # 3. 保存
-                img_to_check = Image.fromarray(vis_arr)
-                img_to_check.save(f"test_{i}_resized.png")
-                imgs.append(img_arr)
-            
-            imgs = np.stack(imgs, axis=0)  # V x C x H x W
-            imgs = (imgs - self.img_mean) / self.img_std
-            return {
-                    # str
-                    "name": name,
-                    
-                    # View x Channel x W x H
-                    "images": imgs,               
-                }
-            
 class GCD_DataSet(Dataset):
     def __init__(self, args: DatasetConfig, statistics: Statistics,device="cpu"):
         self.root = Path(args.root)
@@ -375,59 +277,3 @@ class GCD_DataSet(Dataset):
             }
 
           
-if __name__ == '__main__':
-    args=parse_args("configs/config_img_input.yaml")
-    train_dataset=GCD_DataSet(args.train_data,device="cuda:1")
-    from tqdm import tqdm
-    
-    count=0
-    for it in tqdm(train_dataset):
-        count+=1
-    
-    print(count)
-    import ipdb;ipdb.set_trace()
-    # num_lst=[]
-    # name_lst=[]
-    # for it in test_data:
-    #     # import ipdb
-    #     # ipdb.set_trace()
-    #     num=it["labels"].sum()
-    #     name=it["name"]
-    #     num_lst.append(num.item())
-    #     name_lst.append(name)
-        
-    # # sort name_lst by num_lst
-    # num_lst = np.array(num_lst)
-    # name_lst = np.array(name_lst)
-    # name_lst = name_lst[np.argsort(num_lst)]
-    # # write name_lst to file: meta_data_train.txt
-    # with open("meta_data_test.txt","w") as f:
-    #     for name in name_lst:
-    #         f.write(name+"\n")
-    # print("Done")
-    
-    
-    # root = ""  # 填你的根目录
-    # sample_file = ""  # 填你的保存路径
-    # samples = []
-
-    # # 列出root下所有条目
-    # it_lst = os.listdir(root)
-    # for it in it_lst:
-    #     now_dir = os.path.join(root, it)
-    #     samples.append(now_dir)
-
-    # print(f"Total samples found: {len(samples)}")
-
-    # # 确保样本数足够
-    # num_samples = min(5000, len(samples))
-
-    # # 随机抽取
-    # selected_samples = random.sample(samples, num_samples)
-
-    # # 写入sample_file
-    # with open(sample_file, "w") as f:
-    #     for path in selected_samples:
-    #         f.write(path + "\n")
-
-    # print(f"Saved {num_samples} samples to {sample_file}")

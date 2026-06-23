@@ -1,5 +1,4 @@
 import torch.nn as nn
-from models.pc_encoder import PctComplexStitch
 import torch.nn.functional as F
 import torch
 

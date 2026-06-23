@@ -6,7 +6,6 @@ from torch import nn, Tensor
 
 from config import ComplexStitchConfig
 from models.core_module import MLP,MLP_hn
-from models.pc_encoder import PctComplexStitch
 from models.transformer_multipath import build_transformer_tripath,build_transformer_bipath
 
 class CornerPredictor(nn.Module):
@@ -175,7 +174,6 @@ class ComplexStitchModel(nn.Module):
         
         self.args = args
         
-        # self.pc_enoder = PctComplexStitch(args)
         self.bi_transformer=build_transformer_bipath(args)
         hidden_dim = self.bi_transformer.d_model
         

@@ -164,7 +164,6 @@ class HungarianMatcher_Patch(nn.Module):
 
 
 def build_matcher_patch(args:ComplexStitchConfig,flag_eval = False):
-  # TODO: 这里为什么需要 batch size?
   if not flag_eval:
     return HungarianMatcher_Patch(cost_class=args.class_loss_coef, 
                                   cost_position=args.patch_geometry_loss_coef, 

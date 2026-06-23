@@ -5,8 +5,7 @@ from config import FlattenConfig
 from models.core_module import MLP_hn, MLP
 from torch.nn.utils.rnn import pad_sequence
 from utils.get_boundary import get_boundary
-from scipy.special import softmax
-from utils.linear_alg import r2_linear,scale_point_cloud_to_aabb,apply_affine_from_info,chamfer_distance,global_scale_min_t,cos_dist_curve,chamfer_distance_max
+from utils.linear_alg import scale_point_cloud_to_aabb,apply_affine_from_info,chamfer_distance,global_scale_min_t,cos_dist_curve,chamfer_distance_max
 import math
 from typing import Optional, Tuple, List
 
@@ -106,57 +105,6 @@ class FFN(nn.Module):
         x = self.dropout(x)
         x = self.linear2(x)
         return x
-
-# for early version debug
-# class KeypointsEncoder(nn.Module):
-#     def __init__(self, args):
-#         super(KeypointsEncoder, self).__init__()
-#         self.fc1 = nn.Linear(3, 128)
-#         self.fc2 = nn.Linear(128, 128)
-#         self.fc3 = nn.Linear(128, 768)
-
-#         self.activation = nn.ReLU()
-#         self.norm = nn.LayerNorm(128)
-
-#     def forward(self,x ):
-#         residual = self.activation(self.fc1(x))  # (B, T, hidden_dim)
-#         out = self.fc2(residual)
-#         out = self.norm(out + residual)          # 残差连接 + LayerNorm
-#         out = self.activation(out)
-#         out = self.fc3(out)                      # 最终输出为 3D
-#         return out
-    
-# for early version debug
-# class EdgeEncoder(nn.Module):
-#     def __init__(self, args):
-#         super(EdgeEncoder, self).__init__()
-#         self.first_encoder = nn.Linear(150, 150)
-#         self.fc1 = nn.Linear(150, 512)
-#         self.fc2 = nn.Linear(512, 512)
-#         self.fc3 = nn.Linear(512, 768)
-
-#         self.activation = nn.ReLU()
-#         self.norm = nn.LayerNorm(512)
-
-#     def forward(self, x):
-#         """
-#         输入:
-#             x: (B, T, N, 3) —— token
-#         输出:
-#             (B, T, 3) —— 解码的3D点
-#         """
-#         B,T,N,D=x.shape
-#         x_reverse = x[:, :, ::-1, :]  # (B, T, N, 2)
-#         x_reverse=x_reverse.reshape(B,T,N*D)
-#         x=x.reshape(B,T,N*D)
-#         x=self.first_encoder(x)+self.first_encoder(x_reverse)/2  # (B, T, N*D)
-#         residual = self.activation(self.fc1(x))  # (B, T, hidden_dim)
-#         out = self.fc2(residual)
-#         out = self.norm(out + residual)          # 残差连接 + LayerNorm
-#         out = self.activation(out)
-#         out = self.fc3(out)                      # 最终输出为 3D
-#         return out
-
 
 class EdgeDecoder(nn.Module):
     def __init__(self, args:FlattenConfig):

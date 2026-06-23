@@ -5,10 +5,11 @@
 # LICENSE file in the root directory of this source tree.
 
 import logging
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Tuple, Union, List, Dict, Any
+from typing import Tuple, Union, List
 
 from vggtencoder.vitlayers import PatchEmbed
 from vggtencoder.vitlayers.block import Block
@@ -18,6 +19,20 @@ from vggtencoder.vitlayers.vision_transformer import vit_small, vit_base, vit_la
 from config import ImageEncoderConfig
 
 logger = logging.getLogger(__name__)
+
+DINO_URL = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_reg4_pretrain.pth"
+DINO_FILENAME = "dinov2_vits14_reg4_pretrain.pth"
+
+def _load_dino_checkpoint():
+    cache_dir = Path(__file__).resolve().parent / "weights"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return torch.hub.load_state_dict_from_url(
+        DINO_URL,
+        model_dir=str(cache_dir),
+        map_location="cpu",
+        file_name=DINO_FILENAME,
+        progress=True,
+    )
 
 # # for ori texture subset
 # _RESNET_MEAN = [0.9319234, 0.92218563, 0.92450895]
@@ -76,8 +91,6 @@ class Aggregator(nn.Module):
         rope_freq=args.rope_freq
         init_values=args.init_values
 
-        self.dino_path=args.dino_path
-        
         block_fn=Block
         aa_order=["frame", "global"]
 
@@ -199,7 +212,7 @@ class Aggregator(nn.Module):
                 init_values=init_values,
             )
           
-            ckpt = torch.load(self.dino_path)
+            ckpt = _load_dino_checkpoint()
             state_dict = ckpt.get("model", ckpt)
             self.patch_embed.load_state_dict(state_dict, strict=False)
 
